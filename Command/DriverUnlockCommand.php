@@ -2,6 +2,8 @@
 
 namespace Lexik\Bundle\MaintenanceBundle\Command;
 
+use Lexik\Bundle\MaintenanceBundle\Drivers\DriverFactory;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -12,8 +14,16 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
  * @package LexikMaintenanceBundle
  * @author  Gilles Gauthier <g.gauthier@lexik.fr>
  */
-class DriverUnlockCommand extends ContainerAwareCommand
+class DriverUnlockCommand extends Command
 {
+    private $driverFactory;
+
+    public function __construct(DriverFactory $driverFactory)
+    {
+        $this->driverFactory = $driverFactory;
+        parent::__construct();
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -27,7 +37,7 @@ class DriverUnlockCommand extends ContainerAwareCommand
 
     <info>%command.full_name% --no-interaction</info>
 EOT
-                );
+            );
     }
 
     /**
@@ -39,11 +49,13 @@ EOT
             return;
         }
 
-        $driver = $this->getContainer()->get('lexik_maintenance.driver.factory')->getDriver();
+        $driver = $this->driverFactory->getDriver();
 
         $unlockMessage = $driver->getMessageUnlock($driver->unlock());
 
         $output->writeln('<info>'.$unlockMessage.'</info>');
+
+        return 0;
     }
 
     /**
